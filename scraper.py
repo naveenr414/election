@@ -3,10 +3,17 @@ import urllib.request as ur
 from poll import Poll
 
 def scrapePolls():
-    sock = ur.urlopen("https://www.realclearpolitics.com/epolls/latest_polls/")
+    sock = ur.urlopen("https://www.realclearpolitics.com/epolls/latest_polls/elections/")
     soup = BeautifulSoup(sock,"html5lib")
 
-    polls = soup.findAll("tr",{"class":"alt"})
+    tables = soup.findAll("table",{"class":"sortable"})
+    polls = []
+    for i in tables:
+        races = i.findAll("tr")
+        for j in races:
+            if(j.find("td",{"class":"lp-race"})):  
+                polls.append(j)
+
     pollList = []
 
     for i in polls:
@@ -33,6 +40,3 @@ def scrapePolls():
 
     return pollList
 
-pollList = scrapePolls()
-for i in pollList:
-    print(i.electionType,i.title)
