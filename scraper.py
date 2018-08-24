@@ -2,11 +2,12 @@ from bs4 import BeautifulSoup
 import urllib.request as ur
 from poll import Poll
 from urllib.parse import urljoin
+import datetime
 
 def scrapePolls():
     base = "https://www.realclearpolitics.com/epolls/latest_polls/elections/"
     sock = ur.urlopen(base)
-    soup = BeautifulSoup(sock,"html5lib")
+    soup = BeautifulSoup(sock,"html.parser")
 
     tables = soup.findAll("table",{"class":"sortable"})
     polls = []
@@ -27,7 +28,7 @@ def scrapePolls():
         pollSpread = i.find("td",{"class":"lp-spread"}).find("span").contents[0]
 
         href = urljoin(base,i.find("td",{"class":"lp-results"}).find("a")['href'])
-        detailSoup = BeautifulSoup(ur.urlopen(href),"html5lib")
+        detailSoup = BeautifulSoup(ur.urlopen(href),"html.parser")
         pollDetails = detailSoup.findAll("tr")
 
         l = []
@@ -36,21 +37,38 @@ def scrapePolls():
                 l.append(j)
         pollDetails = l
 
+        p.title = pollTitle
+        p.company = pollCompany
+        p.results = pollResults
+        p.spread = pollSpread
+        p.parseData()
+
+        best = -1
+        bestDate = -1
+
         for j in pollDetails:
-            k = j.find("td",{"class":"noCenter"}).find("a",{"class":"normal_pollster_name"}).contents
-            print(pollTitle,k)
+            k = j.findAll("td")[1].contents[0].split(" ")[0]+"/18"
+            tempDate= datetime.datetime.strptime(k,"%m/%d/%y")
+            if(best==-1):
+                best = j
+                bestDate = tempDate
+            elif(abs((tempDate-p.date).seconds)<abs((bestDate-p.date).seconds)):
+                best = j
+                bestDate = tempDate
+
+        p.sample = best.findAll("td")[2].contents[0]
+
+        p.voterClass = p.sample.split(" ")[1]
+        p.voterCount = p.sample.split(" ")[0]
+
+        print(p.voterClass,p.voterCount)
 
         if("-" in pollTitle):
             pollDetails = pollTitle.split("-")[1]
             pollTitle = pollTitle.split("-")[0].strip()
             p.details = pollDetails.strip()
 
-        p.title = pollTitle
-        p.company = pollCompany
-        p.results = pollResults
-        p.spread = pollSpread
 
-        p.parseData()
 
         pollList.append(p)
 
