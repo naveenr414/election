@@ -60,8 +60,9 @@ def scrapePolls():
 
         p.voterClass = p.sample.split(" ")[1]
         p.voterCount = p.sample.split(" ")[0]
+        p.moe = float(best.findAll("td")[3].contents[0])
 
-        print(p.voterClass,p.voterCount)
+        print(p.voterClass,p.voterCount,p.moe)
 
         if("-" in pollTitle):
             pollDetails = pollTitle.split("-")[1]
