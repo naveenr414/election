@@ -1,0 +1,109 @@
+results = """GA
+Jim Barksdale 41
+Johnny Isakson 55
+IN
+Evan Bayh 42
+Todd Young 52
+KY
+Jim Gray 43
+Rand Paul 57
+SC
+Thomas Dixon 37
+Tim Scott 61
+VT
+Patrick Leahy 61
+Scott Milne 33
+NC
+Deborah Ross 45
+Richard Burr 51
+OH
+Ted Strickland 37
+Rob Portman 58
+AL
+Ron Crumpton 36
+Richard Shelby 64
+CT
+Richard Blumenthal 63
+Dan Carter 35
+FL
+Patrick Murphy 44
+Marco Rubio 52
+IL
+Tammy Duckworth 54
+Mark Kirk 40
+MD
+Chris Van Hollen 60
+Kathy Szeliga 36
+MO
+Jason Kander 46
+Roy Blunt 49
+NH
+Maggie Hassan 48
+Kelly Ayotte 48
+OK
+Mike Workman 25
+James Lankford 68
+PA
+Katie McGinty 47
+Pat Toomey 49
+AR
+Conner Eldridge 36
+John Boozman 60
+AZ
+Ann Kirkpatrick 41
+John McCain 53
+CO
+Michael Bennet 49
+Darryl Glenn 45
+KS
+Patrick Wiesner 32
+Jerry Moran 62
+LA
+Foster Campbell 17
+John Kennedy 25
+ND
+Eliot Glassheim 17
+John Hoeven 79
+NY
+Charles Schumer 70
+Wendy Long 27
+SD
+Jay Williams 28
+John Thune 72
+WI
+Russ Feingold 47
+Ron Johnson 50
+IA
+Patty Judge 36
+Chuck Grassley 60
+NV
+Catherine Cortez Masto 47
+Joe Heck 45
+UT
+Misty Snow 27
+Mike Lee 68
+CA
+Kamala Harris 62
+Loretta Sanchez 38
+HI
+Brian Schatz 74
+John Carroll 22
+ID
+Jerry Sturgill 28
+Mike Crapo 66
+OR
+Ron Wyden 57
+Mark Callahan 34
+WA
+Patty Murray 59
+Chris Vance 41
+AK
+Joe Miller 30
+Lisa Murkowski 44""".split("\n")
+
+res = []
+for i in range(0,len(results),3):
+    k = [results[i],results[i+1],results[i+2]]
+    res.append(k)
+
+print(res)
