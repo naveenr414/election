@@ -2,7 +2,7 @@ from scraper import *
 from geography import *
 from poll import Poll
 
-pollList = scrapePolls()
+pollList = scrape2016()
 
 for i in pollList:
     print(i.state,i.votes)
