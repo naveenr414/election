@@ -4,7 +4,9 @@ from poll import Poll
 from urllib.parse import urljoin
 import datetime
 
-def getPollInfo(i,base):
+months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+
+def getPollInfo(i,base,d):
     p = Poll()
     
     pollTitle = i.find("td",{"class":"lp-race"}).find("a").contents[0]
@@ -31,6 +33,7 @@ def getPollInfo(i,base):
 
     best = -1
     bestDate = -1
+    p.date = d
 
     for j in pollDetails:
         k = j.findAll("td")[1].contents[0].split(" ")[0]+"/18"
@@ -43,6 +46,7 @@ def getPollInfo(i,base):
             bestDate = tempDate
 
     p.sample = best.findAll("td")[2].contents[0]
+    p.electionDate = bestDate
 
     p.voterClass = p.sample.split(" ")[1]
     p.voterCount = p.sample.split(" ")[0]
@@ -82,18 +86,27 @@ def scrape2016():
     sock = ur.urlopen(base)
     soup = BeautifulSoup(sock,"html.parser")
 
-    tables = soup.findAll("table",{"class":"sortable"})
+    tables = soup.findAll("table")
     polls = []
+    currentDate = ""
+    d = 0
     for i in tables:
+        bolds = i.findAll("b")
+        if(len(bolds)!=0):
+            currentDate = bolds[0].contents[0].split(", ")[-1].split()
+            currentDate[0] = months.index(currentDate[0])+1
+            currentDate[1] = int(currentDate[1])
+            d = str(currentDate[0])+"/"+str(currentDate[1])+"/16"
+            d = datetime.datetime.strptime(d,"%m/%d/%y")
         races = i.findAll("tr")
         for j in races:
             if(j.find("td",{"class":"lp-race"})):  
-                polls.append(j)
+                polls.append((j,d))
 
     pollList = []
 
-    for i in polls:
-        p = getPollInfo(i,base)
+    for i,d in polls:
+        p = getPollInfo(i,base,d)
         pollList.append(p)
 
     return pollList
