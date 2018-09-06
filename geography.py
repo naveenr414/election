@@ -13,15 +13,19 @@ stateList = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado
           'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
           'West Virginia', 'Wisconsin', 'Wyoming']
 monthList = ["Jan","Feb","March","April","May","June","July","Aug","Sept","Nov","Dec"]
+monthLong = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
 def findPollDates():
-    f = open("dates.txt").read().split("\n")[:-1]
+    dateList = open("dates.txt").read().split("\n")[:-1]
     for i in range(len(f)):
-        f[i] = f[i].split(" - ")
-        f[i][0] = f[i][0].strip()
-        f[i][1] = datetime.datetime.strptime(f[i][1],"%m/%d/%y")
+        dateList[i] = dateList[i].split(" - ")
+        stateName = f[i][0]
+        stateDate = f[i][1]
+        
+        dateList[i][0] = stateName.strip()
+        dateList[i][1] = datetime.datetime.strptime(stateDate,"%m/%d/%y")
 
-    return f
+    return dateList
 
 def updatePollDates(): 
     sock = ur.urlopen("https://www.washingtonpost.com/graphics/2017/politics/2018-election-calendar/?noredirect=on&utm_term=.f8ee422d2339")
@@ -32,15 +36,16 @@ def updatePollDates():
 
     for i in rows:
         electionName = i.find("span",{"class":"table-row--header-name"}).contents[0]
+
+        #Find all comments
         comments = i.findAll(text=lambda text:isinstance(text, Comment))[0]
         electionDate = BeautifulSoup(comments,"html5lib").find("p",{"class":"election-note"}).contents[0]
         electionDate = electionDate.split(" ")[1:3]
 
-        electionDate[0] = electionDate[0].replace(".","").strip()
-        electionDate[0] = monthList.index(electionDate[0])+1
-        electionDate[1] = int(electionDate[1][:-2])
-
-        electionDate = str(electionDate[0])+"/"+str(electionDate[1])+"/18"
+        month = electionDate[0].replace(".","").strip()
+        day = int(electionDate[1][:-2])
+        month = monthList.index(month)+1
+        electionDate = str(month)+"/"+str(day)+"/18"
 
         w.write(electionName)
         w.write(" - ")
