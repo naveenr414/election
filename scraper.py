@@ -35,7 +35,17 @@ def getPollInfo(i,base,d):
     bestDate = -1
     p.date = d
 
+    rep = ""
+    dem = ""
+
     for j in pollDetails:
+        sp = j.findAll("td")[-1].findAll("span")[0]
+        political = sp.get("class")
+        if(political):
+            if(political[0]=="rep"):
+                rep=" ".join(sp.contents[0].split(" ")[:-1]).lower()
+            elif(political[0]=="dem"):
+                dem = " ".join(sp.contents[0].split(" ")[:-1]).lower()
         k = j.findAll("td")[1].contents[0].split(" ")[0]+"/18"
         tempDate= datetime.datetime.strptime(k,"%m/%d/%y")
         if(best==-1):
@@ -44,6 +54,30 @@ def getPollInfo(i,base,d):
         elif(abs((tempDate-p.date).seconds)<abs((bestDate-p.date).seconds)):
             best = j
             bestDate = tempDate
+
+    if(rep):
+        p.repName = rep
+        if(p.candidates[0].lower()==rep):
+            p.demName = p.candidates[1]
+        else:
+            p.demName = p.candidates[0]
+    elif(dem):
+        p.demName = dem
+        if(p.candidates[0].lower()==dem):
+            p.repName = p.candidates[1]
+        else:
+            p.repName = p.candidates[0]
+
+    p.demName = p.demName.lower()
+    p.repName = p.repName.lower()
+
+    for i in list(p.votes.keys()):
+        if(i.lower()==p.demName):
+            p.demVotes = p.votes[i]
+        elif(i.lower()==p.repName):
+            p.repVotes = p.votes[i]
+
+    print(p.demName,p.demVotes,p.repName,p.repVotes)
 
     p.sample = best.findAll("td")[2].contents[0]
     p.electionDate = bestDate
