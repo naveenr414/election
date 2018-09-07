@@ -3,37 +3,38 @@ import urllib.request as ur
 from poll import Poll
 from urllib.parse import urljoin
 import datetime
+from geography import monthLong 
 
-months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-
-def getPollInfo(i,base,d):
-    p = Poll()
-    
-    pollTitle = i.find("td",{"class":"lp-race"}).find("a").contents[0]
-    pollCompany = i.find("td",{"class":"lp-poll"}).find("a").contents[0]
-    pollResults = i.find("td",{"class":"lp-results"}).find("a").contents[0]
-    pollSpread = i.find("td",{"class":"lp-spread"}).find("span").contents[0]
-
-    href = urljoin(base,i.find("td",{"class":"lp-results"}).find("a")['href'])
+def findPollDetails(baseURL,race):
+    href = urljoin(baseURL,race.find("td",{"class":"lp-results"}).find("a")['href'])
     href = "http"+href.split("http")[-1]
     detailSoup = BeautifulSoup(ur.urlopen(href),"html.parser")
     pollDetails = detailSoup.findAll("tr")
 
-    l = []
-    for j in pollDetails:
-        if(j.has_attr('data-id')):
-            l.append(j)
-    pollDetails = l
+    row = 0
+    while(row<len(pollDetails)):
+        if(not pollDetails[row].has_attr('data-id')):
+            del pollDetails[row]
+        else:
+            row+=1
 
-    p.title = pollTitle
-    p.company = pollCompany
-    p.results = pollResults
-    p.spread = pollSpread
+    return pollDetails
+
+
+def getPollInfo(baseURL,race,date):
+    p = Poll()
+    
+    p.title = race.find("td",{"class":"lp-race"}).find("a").contents[0]
+    p.company = race.find("td",{"class":"lp-poll"}).find("a").contents[0]
+    p.results = race.find("td",{"class":"lp-results"}).find("a").contents[0]
+    p.spread = race.find("td",{"class":"lp-spread"}).find("span").contents[0]
     p.parseData()
 
+
+    pollDetails = findPollDetails(baseURL,race)
     best = -1
     bestDate = -1
-    p.date = d
+    p.date = date
 
     rep = ""
     dem = ""
@@ -94,54 +95,40 @@ def getPollInfo(i,base,d):
 
     return p
 
-def scrapePolls():
-    base = "https://www.realclearpolitics.com/epolls/latest_polls/elections/"
-    sock = ur.urlopen(base)
-    soup = BeautifulSoup(sock,"html.parser")
+def scrapePolls(year=2018):
+    base = ""
+    if(year==2018):
+        base = "https://www.realclearpolitics.com/epolls/latest_polls/senate/"
+    elif(year==2016):
+        base = "https://web.archive.org/web/20171025011101/https://www.realclearpolitics.com/epolls/latest_polls/senate/"
 
-    tables = soup.findAll("table",{"class":"sortable"})
-    polls = []
-    for i in tables:
-        races = i.findAll("tr")
-        for j in races:
-            if(j.find("td",{"class":"lp-race"})):  
-                polls.append(j)
-
-    pollList = []
-
-    for i in polls:
-        p = getPollInfo(i)
-        pollList.append(p)
-
-    return pollList
-
-def scrape2016():
-    base = "https://web.archive.org/web/20171025011101/https://www.realclearpolitics.com/epolls/latest_polls/senate/"
     sock = ur.urlopen(base)
     soup = BeautifulSoup(sock,"html.parser")
 
     tables = soup.findAll("table")
-    polls = []
+    raceInfo = []
     currentDate = ""
-    d = 0
-    for i in tables:
-        bolds = i.findAll("b")
+    date = ""
+    for table in tables:
+        #Bold means a new date that polls were conducted
+        bolds = table.findAll("b")
         if(len(bolds)!=0):
             currentDate = bolds[0].contents[0].split(", ")[-1].split()
-            currentDate[0] = months.index(currentDate[0])+1
+            currentDate[0] = monthLong.index(currentDate[0])+1
             currentDate[1] = int(currentDate[1])
-            d = str(currentDate[0])+"/"+str(currentDate[1])+"/16"
-            d = datetime.datetime.strptime(d,"%m/%d/%y")
-        races = i.findAll("tr")
-        for j in races:
-            if(j.find("td",{"class":"lp-race"})):  
-                polls.append((j,d))
+            date = str(currentDate[0])+"/"+str(currentDate[1])+"/16"
+            date = datetime.datetime.strptime(date,"%m/%d/%y")
+        
+        races = table.findAll("tr")
+        for race in races:
+            if(race.find("td",{"class":"lp-race"})):  
+                raceInfo.append((race,date))
 
     pollList = []
 
-    for i,d in polls:
-        p = getPollInfo(i,base,d)
-        pollList.append(p)
+    for race,date in raceInfo:
+        poll = getPollInfo(base,race,date)
+        pollList.append(poll)
 
     return pollList
 

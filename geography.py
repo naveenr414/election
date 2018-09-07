@@ -17,10 +17,10 @@ monthLong = ["January","February","March","April","May","June","July","August","
 
 def findPollDates():
     dateList = open("dates.txt").read().split("\n")[:-1]
-    for i in range(len(f)):
+    for i in range(len(dateList)):
         dateList[i] = dateList[i].split(" - ")
-        stateName = f[i][0]
-        stateDate = f[i][1]
+        stateName = dateList[i][0]
+        stateDate = dateList[i][1]
         
         dateList[i][0] = stateName.strip()
         dateList[i][1] = datetime.datetime.strptime(stateDate,"%m/%d/%y")

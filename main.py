@@ -3,7 +3,7 @@ from geography import *
 from poll import Poll
 import datetime
 
-pollList = scrape2016()
+pollList = scrapePolls(year=2016)
 races = {}
 s = []
 
