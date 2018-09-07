@@ -30,7 +30,6 @@ def getPollInfo(baseURL,race,date):
     p.spread = race.find("td",{"class":"lp-spread"}).find("span").contents[0]
     p.parseData()
 
-
     pollDetails = findPollDetails(baseURL,race)
     best = -1
     bestDate = -1
@@ -39,23 +38,15 @@ def getPollInfo(baseURL,race,date):
     rep = ""
     dem = ""
 
-    for j in pollDetails:
-        sp = j.findAll("td")[-1].findAll("span")[0]
-        political = sp.get("class")
-        if(political):
-            if(political[0]=="rep"):
-                rep=" ".join(sp.contents[0].split(" ")[:-1]).lower()
-            elif(political[0]=="dem"):
-                dem = " ".join(sp.contents[0].split(" ")[:-1]).lower()
-        k = j.findAll("td")[1].contents[0].split(" ")[0]+"/18"
-        tempDate= datetime.datetime.strptime(k,"%m/%d/%y")
-        if(best==-1):
-            best = j
-            bestDate = tempDate
-        elif(abs((tempDate-p.date).seconds)<abs((bestDate-p.date).seconds)):
-            best = j
-            bestDate = tempDate
-
+    for row in pollDetails:
+        swing = row.findAll("td")[-1].findAll("span")[0]
+        party = swing.get("class")
+        if(party):
+            if(party[0]=="rep"):
+                rep=" ".join(swing.contents[0].split(" ")[:-1]).lower()
+            elif(party[0]=="dem"):
+                dem = " ".join(swing.contents[0].split(" ")[:-1]).lower()
+        
     if(rep):
         p.repName = rep
         if(p.candidates[0].lower()==rep):
@@ -78,7 +69,12 @@ def getPollInfo(baseURL,race,date):
         elif(i.lower()==p.repName):
             p.repVotes = p.votes[i]
 
-    print(p.demName,p.demVotes,p.repName,p.repVotes)
+    for row in pollDetails:
+        pollDate = row.findAll("td")[1].contents[0].split(" ")[0]+"/18"
+        pollDate = datetime.datetime.strptime(pollDate,"%m/%d/%y")
+        if(best==-1 or abs((pollDate-p.date).seconds)<abs((bestDate-p.date).seconds)):
+            best = row
+            bestDate = pollDate
 
     p.sample = best.findAll("td")[2].contents[0]
     p.electionDate = bestDate
@@ -86,12 +82,6 @@ def getPollInfo(baseURL,race,date):
     p.voterClass = p.sample.split(" ")[1]
     p.voterCount = p.sample.split(" ")[0]
     p.moe = float(best.findAll("td")[3].contents[0])
-
-
-    if("-" in pollTitle):
-        pollDetails = pollTitle.split("-")[1]
-        pollTitle = pollTitle.split("-")[0].strip()
-        p.details = pollDetails.strip()
 
     return p
 

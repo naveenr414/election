@@ -43,9 +43,15 @@ class Poll:
             name = " ".join(i.split()[:-1])
             if(len(i.split())==1):
                 name = i
-            
+    
             self.candidates.append(name)
             self.votes[name] = num
+            
+        if("-" in self.title):
+            pollDetails = self.title.split("-")[1]
+            self.title = self.title.split("-")[0].strip()
+            self.details = pollDetails.strip()
+
 
     def __str__(self):
         return self.title+" by "+self.company + " predicted "+self.spread
